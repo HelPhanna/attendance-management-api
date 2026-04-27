@@ -1,0 +1,9 @@
+parameters:
+    level: 5
+    paths:
+        - app
+
+    # Suppress false-positive "Undefined method 'extend'" in Laravel's Builder.
+    # Laravel guards this call with method_exists() at runtime — it is safe.
+    ignoreErrors:
+        - '#Call to an undefined method Illuminate\\Database\\Eloquent\\Scope::extend\(\)#'
