@@ -1,215 +1,131 @@
-# Attendance Management System - Backend
+﻿# Attendance Management API
 
-A Laravel 12 API backend for an Attendance Management System providing comprehensive student attendance tracking, reporting, and administrative features.
+Laravel 12 backend API for the Attendance Management System.
+This service handles authentication, role-based authorization, attendance records, analytics, reporting, and school settings.
 
-## Table of Contents
+## Tech Stack
 
-- [Overview](#overview)
-- [Prerequisites](#prerequisites)
-- [Installation](#installation)
-- [Configuration](#configuration)
-- [Running the Application](#running-the-application)
-- [Project Structure](#project-structure)
-- [API Endpoints](#api-endpoints)
-- [Database](#database)
-- [Testing](#testing)
-- [Troubleshooting](#troubleshooting)
-
-## Overview
-
-This Laravel backend provides RESTful API endpoints for managing:
-
-- **Students & Teachers** — User management and profiles
-- **Classes & Sessions** — Class organization and attendance sessions
-- **Attendance Records** — Track and manage student attendance
-- **Academic Structure** — Grade levels, subjects, and terms
-- **Reporting** — Generate attendance reports and exports
-- **Role-Based Access Control** — Permissions and user roles
-- **Blacklisting** — Manage restricted users
+- PHP 8.2+
+- Laravel 12
+- Laravel Sanctum (API authentication)
+- MySQL/PostgreSQL/SQLite (Laravel-supported databases)
+- Vite + Tailwind CSS (asset pipeline)
 
 ## Prerequisites
 
-- PHP 8.2 or higher
+- PHP 8.2 or newer
 - Composer
-- Node.js 18+ (for asset compilation)
-- MySQL, PostgreSQL, SQLite, or other Laravel-supported database
-- Git (optional, already removed from this workspace)
+- Node.js 18+
+- npm
+- A running database server
 
-## Installation
+## Quick Start
 
-1. **Clone or extract the project**
+1. Install dependencies:
 
-    ```bash
-    cd Backend
-    ```
-
-2. **Install PHP dependencies**
-
-    ```bash
-    composer install
-    ```
-
-3. **Install Node.js dependencies**
-
-    ```bash
-    npm install
-    ```
-
-4. **Create environment file**
-
-    ```bash
-    cp .env.example .env
-    ```
-
-5. **Generate application key**
-
-    ```bash
-    php artisan key:generate
-    ```
-
-6. **Build frontend assets**
-    ```bash
-    npm run build
-    ```
-
-## Configuration
-
-Update `.env` file with your settings:
-
-```env
-APP_NAME="Attendance Management"
-APP_ENV=local
-APP_DEBUG=true
-APP_URL=http://localhost:8000
-
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=attendance_db
-DB_USERNAME=root
-DB_PASSWORD=
-
-MAIL_MAILER=smtp
-MAIL_HOST=your_mail_host
-MAIL_PORT=587
-MAIL_USERNAME=your_email
-MAIL_PASSWORD=your_password
-MAIL_ENCRYPTION=tls
-
-# Add any other service credentials as needed
+```bash
+composer install
+npm install
 ```
 
-Run migrations to set up the database:
+2. Create environment file:
+
+```bash
+cp .env.example .env
+```
+
+3. Generate app key:
+
+```bash
+php artisan key:generate
+```
+
+4. Configure database in `.env`, then run:
 
 ```bash
 php artisan migrate
 php artisan db:seed
 ```
 
-## Running the Application
-
-### Development Mode (Single Command)
+5. Start development:
 
 ```bash
 composer run dev
 ```
 
-This runs Laravel + Vite with hot module reloading.
+Default app URL is `http://127.0.0.1:8000` unless changed in `.env`.
 
-### Development Mode (Manual)
+## Environment Notes
 
-**Terminal 1 — Laravel server:**
+Important `.env` values:
 
-```bash
-php artisan serve
-```
+- `APP_URL`
+- `DB_CONNECTION`, `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`
+- Any mail/export-related settings used in your environment
 
-**Terminal 2 — Vite dev server:**
+## Scripts
 
-```bash
-npm run dev
-```
+### Composer
 
-### Production Build
+- `composer run dev`: Run Laravel server, queue listener, logs (`pail`), and Vite concurrently
+- `composer run test`: Clear config and run test suite
+- `composer run setup`: Install dependencies, create `.env`, generate key, migrate, and build assets
 
-```bash
-npm run build
-php artisan optimize
-```
+### NPM
 
-The application will be available at `http://localhost:8000`.
+- `npm run dev`: Start Vite in development mode
+- `npm run build`: Build frontend assets for production
+
+## API Authentication
+
+- Public auth endpoints are under `/api/auth` (`register`, `login`, `forgot-password`)
+- Most endpoints require `auth:sanctum` token authentication
+- Role middleware is used for restricted resources (for example `super_admin`, `admin`)
+
+## Main API Route Groups
+
+Defined in `routes/api.php`:
+
+- `/api/auth`
+- `/api/user-profile`
+- `/api/permissions`
+- `/api/roles`
+- `/api/users`
+- `/api/user-roles`
+- `/api/rolespermissions`
+- `/api/classes`
+- `/api/grade-levels`
+- `/api/grade-level-subjects`
+- `/api/blacklists`
+- `/api/class-teachers`
+- `/api/students`
+- `/api/teachers`
+- `/api/enrollments`
+- `/api/academic-year`
+- `/api/term`
+- `/api/class-session`
+- `/api/settings`
+- `/api/attendance-records`
+- `/api/attendance-analytics`
+- `/api/report-export`
+
+For complete endpoint details and HTTP methods, see `routes/api.php` and corresponding controllers in `app/Http/Controllers`.
 
 ## Project Structure
 
-```
+```text
 app/
-├── Actions/           # Business logic actions
-│   ├── AcademicYear/
-│   ├── AttendanceRecord/
-│   ├── Classes/
-│   ├── ClassSession/
-│   ├── Student/
-│   ├── Teacher/
-│   └── ...
-├── Http/
-│   ├── Controllers/   # API controllers
-│   └── Middleware/    # Request middleware
-├── Models/            # Eloquent models
-└── Providers/         # Service providers
-
-config/               # Configuration files
-database/
-├── migrations/       # Database schema
-└── seeders/          # Database seeds
-
-resources/
-├── css/              # Stylesheets
-└── js/               # JavaScript/Vue components
-
+  Http/Controllers/      # API controllers
+  Models/                # Eloquent models
+  Actions/               # Business logic actions
 routes/
-├── api.php           # API routes
-├── web.php           # Web routes
-└── console.php       # Console commands
+  api.php                # API routes
+config/                  # Framework and app configuration
+database/
+  migrations/            # Schema changes
+  seeders/               # Seed data
+tests/                   # Feature and unit tests
 ```
-
-## API Endpoints
-
-The backend provides RESTful API endpoints. Key resource groups:
-
-- `/api/students` — Student management
-- `/api/teachers` — Teacher management
-- `/api/classes` — Class information
-- `/api/attendance` — Attendance records
-- `/api/academic-years` — Academic year management
-- `/api/terms` — Term management
-- `/api/users` — User management
-- `/api/roles` — Role management
-- `/api/permissions` — Permission management
-- `/api/reports` — Attendance reports
-- `/api/blacklist` — Blacklist management
-
-See route definitions in `routes/api.php` for complete endpoint documentation.
-
-## Database
-
-### Models
-
-Core models include:
-
-- `User` — System users
-- `Student` — Student information
-- `Teacher` — Teacher information
-- `Classes` — Class definitions
-- `ClassSession` — Individual attendance sessions
-- `AttendanceRecord` — Attendance tracking
-- `GradeLevel` — Grade/level information
-- `Subject` — Subjects offered
-- `Term` — Academic terms
-- `Role` — User roles
-- `Permission` — System permissions
-- `Blacklist` — Restricted accounts
-
-See `app/Models/` for complete model definitions.
 
 ## Testing
 
@@ -219,59 +135,27 @@ Run all tests:
 php artisan test
 ```
 
-Run specific test file:
+Run a specific test file:
 
 ```bash
 php artisan test tests/Feature/StudentTest.php
 ```
 
-Run with coverage:
-
-```bash
-php artisan test --coverage
-```
-
-## Troubleshooting
-
-### Port Already in Use
-
-Change the port for `php artisan serve`:
-
-```bash
-php artisan serve --port=8001
-```
-
-### Database Connection Error
-
-- Verify `.env` database credentials
-- Ensure database server is running
-- Check database user has necessary privileges
-
-### Missing Dependencies
-
-```bash
-composer install
-npm install
-```
-
-### Clear Cache
-
-```bash
-php artisan cache:clear
-php artisan config:clear
-php artisan view:clear
-```
-
-### Asset Issues
+## Production Build
 
 ```bash
 npm run build
 php artisan optimize
 ```
 
-## Support
+## Troubleshooting
 
-For issues or questions, refer to:
+- Port conflict: `php artisan serve --port=8001`
+- Clear caches: `php artisan optimize:clear`
+- Re-run dependencies: `composer install && npm install`
+- Recreate DB schema: `php artisan migrate:fresh --seed`
 
-- [Laravel Documentation](https://laravel.com/docs)
-- Project documentation and comments in the codebase
+## Related Docs
+
+- Backend API testing guide: `POSTMAN_BACKEND_TESTING.md`
+- Laravel docs: <https://laravel.com/docs>
