@@ -15,10 +15,11 @@ class CreateUser
     public function execute(array $data): User
     {
         $validator = Validator::make($data, [
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email',
-            'password' => 'required|string|min:6|confirmed',
-            'status' => ['nullable', Rule::in(['active', 'inactive'])],
+            'name'      => 'required|string|max:255',
+            'email'     => 'required|string|email|max:255|unique:users,email',
+            'password'  => 'required|string|min:6|confirmed',
+            'status'    => ['nullable', Rule::in(['active', 'inactive'])],
+            'role'      => ['nullable', 'string', 'exists:roles,name'],
         ]);
 
         if ($validator->fails()) {
@@ -29,21 +30,21 @@ class CreateUser
 
             // Create user
             $user = User::create([
-                'name' => $data['name'],
-                'email' => $data['email'],
+                'name'     => $data['name'],
+                'email'    => $data['email'],
                 'password' => Hash::make($data['password']),
-                'status' => $data['status'] ?? 'active',
+                'status'   => $data['status'] ?? 'active',
             ]);
 
-            // Find student role
-            $studentRole = Role::where('name', 'student')->first();
+            // Use provided role name, fall back to 'student'
+            $roleName = $data['role'] ?? 'student';
+            $role = Role::where('name', $roleName)->first();
 
-            if (!$studentRole) {
-                throw new \Exception('Default role "student" not found.');
+            if (!$role) {
+                throw new \Exception("Role \"{$roleName}\" not found.");
             }
 
-            // Attach default role
-            $user->roles()->attach($studentRole->id);
+            $user->roles()->attach($role->id);
 
             return $user->load('roles');
         });

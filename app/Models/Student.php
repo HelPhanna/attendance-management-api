@@ -57,7 +57,7 @@ class Student extends Model
     {
         return $this->belongsToMany(
             Classes::class,
-            'enrollment',
+            'enrollments',
             'student_id',
             'class_id'
         );

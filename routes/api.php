@@ -3,6 +3,7 @@
 use App\Http\Controllers\AcademicYearController;
 use App\Http\Controllers\AttendanceRuleController;
 use App\Http\Controllers\AttendanceRecordController;
+use App\Http\Controllers\AttendanceAnalyticsController;
 use App\Http\Controllers\AttendanceReportExportController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BlacklistController;
@@ -20,6 +21,7 @@ use App\Http\Controllers\StudentController;
 use App\Http\Controllers\TeacherController;
 use App\Http\Controllers\TermController;
 use App\Http\Controllers\UserProfileController;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserRoleController;
 use App\Actions\User\ForgotPassword;
 use Illuminate\Http\Request;
@@ -48,7 +50,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('user-profile')->group(function () {
         Route::post('/create',   [UserProfileController::class, 'store']);
         Route::get('/show',      [UserProfileController::class, 'show']);
-        Route::put('/update',    [UserProfileController::class, 'update']);
+        Route::match(['put','post'], '/update', [UserProfileController::class, 'update']);
         Route::delete('/delete', [UserProfileController::class, 'destroy']);
     });
 
@@ -76,13 +78,20 @@ Route::middleware('auth:sanctum')->group(function () {
         });
     });
 
-    // User-Role Management — super_admin or admin only
+    // User Management — super_admin only
+    Route::middleware(['super_admin'])->prefix('users')->group(function () {
+        Route::delete('/{id}', [UserController::class, 'destroy']);
+    });
+
+    // User-Role Management — read/create/update: super_admin or admin; delete: super_admin only
     Route::middleware(['role:super_admin,admin'])->prefix('user-roles')->group(function () {
         Route::get('/',        [UserRoleController::class, 'index']);
         Route::post('/create', [UserRoleController::class, 'store']);
         Route::post('/update', [UserRoleController::class, 'update']);
-        Route::post('/delete', [UserRoleController::class, 'destroy']);
         Route::get('/{id}',    [UserRoleController::class, 'show']);
+    });
+    Route::middleware(['super_admin'])->prefix('user-roles')->group(function () {
+        Route::post('/delete', [UserRoleController::class, 'destroy']);
     });
 
     // Role-Permission Management — super_admin or admin only
@@ -214,6 +223,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/',      [AttendanceRecordController::class, 'store']);
         Route::put('/',       [AttendanceRecordController::class, 'update']);
         Route::delete('/',    [AttendanceRecordController::class, 'destroy']);
+    });
+
+    // Attendance Analytics
+    Route::prefix('attendance-analytics')->group(function () {
+        Route::get('/report-summary', [AttendanceAnalyticsController::class, 'reportSummary']);
+        Route::get('/blacklist-overview', [AttendanceAnalyticsController::class, 'blacklistOverview']);
     });
 
     // Report Export (PDF / XLSX)

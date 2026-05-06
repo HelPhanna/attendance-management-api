@@ -17,8 +17,8 @@ class FilterAttendanceRecord
 
             $query = ClassSession::query()
                 ->with([
-                    'attendance',      // ✅ your relationship name
-                    'class.students',
+                    'attendance',
+                    'class.students.user',  // eager-load user to get name without N+1
                 ])
                 ->where('day_of_week', $dayName)
                 ->where('term_id', $data['term_id'])
@@ -49,10 +49,11 @@ class FilterAttendanceRecord
                 $record = $session->attendance->firstWhere('student_id', $student->id); // ✅
 
                 return [
-                    'student_id' => $student->id,
-                    'name'       => trim(($student->last_name ?? '') . ', ' . ($student->first_name ?? '')),
-                    'status'     => $record->status ?? null,
-                    'comment'    => $record->comment ?? null,
+                    'student_id'   => $student->id,
+                    'student_code' => $student->student_code ?? "STU-{$student->id}",
+                    'name'         => $student->user?->name ?? "Student #{$student->id}",
+                    'status'       => $record->status ?? null,
+                    'comment'      => $record->comment ?? null,
                 ];
             })->values();
 
