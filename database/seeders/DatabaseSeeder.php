@@ -25,6 +25,7 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             UserProfileSeeder::class,
             UserRoleSeeder::class,
+            SuperAdminSeeder::class,
 
             // Academic Structure
             AcademicYearSeeder::class,
