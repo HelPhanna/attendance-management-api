@@ -62,6 +62,23 @@ Important `.env` values:
 - `APP_URL`
 - `DB_CONNECTION`, `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`
 - Any mail/export-related settings used in your environment
+- `CORS_ALLOWED_ORIGINS` (for browser access from your frontend URL)
+
+### CORS Configuration
+
+This project now includes explicit Laravel CORS config in `config/cors.php`.
+
+For local development with the Vite UI, set:
+
+```env
+CORS_ALLOWED_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
+```
+
+Notes:
+
+- API routes are covered via `paths: ['api/*', 'sanctum/csrf-cookie']`.
+- Current frontend auth uses Bearer tokens, so `CORS_SUPPORTS_CREDENTIALS=false` is safe.
+- If you later switch to cookie-based Sanctum SPA auth, change `CORS_SUPPORTS_CREDENTIALS=true` and configure `SANCTUM_STATEFUL_DOMAINS`.
 
 ## Scripts
 

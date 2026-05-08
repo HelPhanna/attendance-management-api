@@ -78,6 +78,7 @@ class AttendanceRecordController extends Controller
     public function store(Request $request, CreateAttendanceRecord $action)
     {
         $validated = $request->validate([
+            'date'                 => ['required', 'date'],
             'class_session_id'     => ['required', 'integer', 'exists:class_sessions,id'],
             'records'              => ['required', 'array', 'min:1'],
             'records.*.student_id' => ['required', 'integer', 'exists:students,id'],
@@ -136,6 +137,7 @@ class AttendanceRecordController extends Controller
     public function update(Request $request, UpdateAttendanceRecord $action)
     {
         $validated = $request->validate([
+            'date'                 => ['required', 'date'],
             'class_session_id'     => ['required', 'integer', 'exists:class_sessions,id'],
             'records'              => ['required', 'array', 'min:1'],
             'records.*.student_id' => ['required', 'integer', 'exists:students,id'],

@@ -15,6 +15,7 @@ class AttendanceRecord extends Model
         'class_session_id',
         'student_id',
         'recorded_by',
+        'attendance_date',
         'status',
         'comment'
     ];

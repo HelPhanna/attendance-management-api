@@ -17,7 +17,9 @@ class FilterAttendanceRecord
 
             $query = ClassSession::query()
                 ->with([
-                    'attendance',
+                    'attendance' => function ($query) use ($data) {
+                        $query->whereDate('attendance_date', $data['date']);
+                    },
                     'class.students.user',  // eager-load user to get name without N+1
                 ])
                 ->where('day_of_week', $dayName)

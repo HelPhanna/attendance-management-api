@@ -15,27 +15,50 @@ class UpdateAttendanceRecord
             DB::beginTransaction();
 
             $classSessionId = $data['class_session_id'];
+            $attendanceDate = $data['date'];
             $records = $data['records'];
             $userId = Auth::id();
             $now = now();
 
-            $rows = collect($records)->map(function ($record) use ($classSessionId, $userId, $now) {
-                return [
-                    'class_session_id' => $classSessionId,
-                    'student_id'       => $record['student_id'],
-                    'recorded_by'      => $userId,
-                    'status'           => $record['status'] ?? 'present',
-                    'comment'          => $record['comment'] ?? null,
-                    'updated_at'       => $now,
-                ];
-            })->toArray();
+            $recordCollection = collect($records);
+            $rows = $recordCollection
+                ->filter(fn($record) => !is_null($record['status'] ?? null))
+                ->map(function ($record) use ($classSessionId, $attendanceDate, $userId, $now) {
+                    return [
+                        'class_session_id' => $classSessionId,
+                        'student_id'       => $record['student_id'],
+                        'recorded_by'      => $userId,
+                        'attendance_date'  => $attendanceDate,
+                        'status'           => $record['status'],
+                        'comment'          => $record['comment'] ?? null,
+                        'updated_at'       => $now,
+                    ];
+                })
+                ->values()
+                ->toArray();
+
+            $unselectedStudentIds = $recordCollection
+                ->filter(fn($record) => is_null($record['status'] ?? null))
+                ->pluck('student_id')
+                ->values()
+                ->toArray();
+
+            if (!empty($unselectedStudentIds)) {
+                AttendanceRecord::query()
+                    ->where('class_session_id', $classSessionId)
+                    ->whereDate('attendance_date', $attendanceDate)
+                    ->whereIn('student_id', $unselectedStudentIds)
+                    ->delete();
+            }
 
             // Update existing records (based on unique key)
-            AttendanceRecord::upsert(
-                $rows,
-                ['class_session_id', 'student_id'], // unique columns
-                ['recorded_by', 'status', 'comment', 'updated_at'] // columns to update
-            );
+            if (!empty($rows)) {
+                AttendanceRecord::upsert(
+                    $rows,
+                    ['class_session_id', 'student_id', 'attendance_date'], // unique columns
+                    ['recorded_by', 'status', 'comment', 'updated_at'] // columns to update
+                );
+            }
 
             DB::commit();
 
